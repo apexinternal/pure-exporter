@@ -1,4 +1,16 @@
-FROM python:3.9-alpine
+# FROM python:3.9-alpine
+
+FROM python:3.9-slim-buster AS builder
+# Application directory
+WORKDIR /app
+COPY . /app
+RUN apt-get update
+RUN apt-get install ca-certificates -y
+COPY apex_ca.crt /usr/local/share/ca-certificates
+# COPY apex_ca.crt /etc/ssl/certs/
+RUN update-ca-certificates
+RUN export SSL_CERT_DIR=/etc/ssl/certs
+RUN apt-get install python3-pip git -y
 
 # Application directory
 WORKDIR /app
@@ -6,12 +18,20 @@ COPY pure_fa_exporter.py requirements.fa.txt /app/
 COPY flasharray_collector /app/flasharray_collector
 
 # Install dependencies and WSGI server
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir --upgrade requests && \
-    pip install --no-cache-dir -r requirements.fa.txt
+# RUN pip install --upgrade pip && \
+#     pip install --no-cache-dir --upgrade requests && \
+#     pip install --no-cache-dir -r requirements.fa.txt
+
+RUN python3 -m pip config set global.cert certs/nscacert.pem
+RUN python3 -m pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --no-cache-dir --upgrade certifi -vvv
+RUN python3 -m pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --upgrade pip -vvv
+RUN python3 -m pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --no-cache-dir --upgrade requests -vvv
+# Flask Flask-HTTPAuth prometheus-client purestorage urllib3 gunicorn
+RUN python3 -m pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -vvv -r requirements.fa.txt 
 
 # Run as non-root user
-RUN addgroup -S app && adduser -S -G app app
+RUN addgroup --system app 
+RUN adduser --system app
 USER app
 
 # Configure the image properties
@@ -25,3 +45,6 @@ ENV GUNICORN_CMD_ARGS="--bind=0.0.0.0:9491 \
     --access-logformat=\"%(t)s %(h)s %(U)s %(l)s %(T)s %(B)s\""
 EXPOSE 9491
 ENTRYPOINT ["gunicorn", "pure_fa_exporter:app"]
+
+# DOCKER_BUILDKIT=0  docker build -t wooj:fa -f Dockerfile.fa .
+# docker run -p 9491:9491 --name pure-exporter-fa wooj:fa

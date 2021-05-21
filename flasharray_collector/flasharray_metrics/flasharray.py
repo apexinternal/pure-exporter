@@ -29,12 +29,16 @@ class FlashArray:
     def __init__(self, endpoint, api_token):
         self.flasharray = None
         try:
-            self.flasharray =  purestorage.FlashArray(
+            self.flasharray = purestorage.FlashArray(
                 endpoint,
-                api_token=api_token,
-                user_agent='Purity_FA_Prometheus_exporter/1.0')
+                api_token=api_token)
+                # user_agent='Purity_FA_Prometheus_exporter/1.0')
         except purestorage.PureError:
             pass
+
+        print("flash: ", self.flasharray)
+        print("endpoint:", endpoint)
+        print("apitoken:", api_token)
 
         self.array = None
         self.hosts = None
