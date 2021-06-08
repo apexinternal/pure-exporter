@@ -5,7 +5,7 @@ FROM python:3.9-slim-buster AS builder
 WORKDIR /app
 COPY . /app
 RUN apt-get update
-RUN apt-get install ca-certificates -y
+RUN apt-get install ca-certificates curl openssl -y
 COPY apex_ca.crt /usr/local/share/ca-certificates
 # COPY apex_ca.crt /etc/ssl/certs/
 RUN update-ca-certificates
@@ -39,12 +39,13 @@ USER app
 # stdout/stderr (docker/k8s handles logs), anonymize request URL
 # end of log shows request time in seconds and size in bytes
 ENV GUNICORN_CMD_ARGS="--bind=0.0.0.0:9491 \
-    --workers=2 \
+    --workers=1 \
     --access-logfile=- \
     --error-logfile=- \
+    --log-level debug \
     --access-logformat=\"%(t)s %(h)s %(U)s %(l)s %(T)s %(B)s\""
 EXPOSE 9491
 ENTRYPOINT ["gunicorn", "pure_fa_exporter:app"]
 
-# DOCKER_BUILDKIT=0  docker build -t wooj:fa -f Dockerfile.fa .
-# docker run -p 9491:9491 --name pure-exporter-fa wooj:fa
+# DOCKER_BUILDKIT=0  docker build -t gcr.io/apexclearing/pure-exporter:v1.2.5-a-apex  -f Dockerfile.fa .
+# docker run -p 9491:9491 --name pure-exporter-fa gcr.io/apexclearing/pure-exporter:v1.2.5-a-apex

@@ -36,9 +36,9 @@ class FlashArray:
         except purestorage.PureError:
             pass
 
-        print("flash: ", self.flasharray)
+        # print("flash: ", self.flasharray)
         print("endpoint:", endpoint)
-        print("apitoken:", api_token)
+        # print("apitoken:", api_token)
 
         self.array = None
         self.hosts = None
