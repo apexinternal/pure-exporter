@@ -1,3 +1,5 @@
+# Archived per DevEx 9/14/2022
+
 ![Current version](https://img.shields.io/github/v/tag/PureStorage-OpenConnect/pure-exporter?label=current%20version)
 
 # Pure Storage Prometheus exporter
